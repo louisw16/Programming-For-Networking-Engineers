@@ -1,0 +1,46 @@
+file = open('devices-01.txt', 'r')
+name = file.readline().strip()
+ip_address = file.readline().strip()
+os_type = file.readline().strip()
+username = file.readline().strip()
+password = file.readline().strip()
+
+print('--- Device info nicely formatted -----------------------')
+print('')
+print('Name      IP address       OS        Username       Password')
+print('----      ----------       --        --------       --------')
+print('{0:8}  {1:15}  {2:8}   {3:10} {4:10}'.format(name, ip_address,  os_type, username,        password))
+
+
+print('')
+print('--------------------------------------------------------')
+
+
+
+device_info = name
+device_info = device_info + ',' + ip_address
+device_info = device_info + ',' + os_type
+device_info = device_info + ',' + username
+device_info = device_info + ',' + password
+
+print('')
+print('--- Writing device infomation to file ------------------')
+print('')
+outfile = open('devices-01-out.csv', 'w')
+outfile.write(device_info)
+outfile.write('\n')
+outfile.close()
+print('--- Device infomation written to file ------------------')
+print('')
+
+infile = open('devices-01-out.csv', 'r')
+device_info = infile.readline().strip()
+infile.close()
+
+print('')
+print('--- Device info read from file we wrote -----------------')
+print('')
+print('Device Info: ', device_info)
+print('')
+print('---------------------------------------------------------')
+print('')
