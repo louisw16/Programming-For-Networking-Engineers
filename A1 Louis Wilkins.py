@@ -1,14 +1,14 @@
 from netmiko import ConnectHandler
 import getpass
 
-host = ''
+host = '192.168.56.130'
 username = input('Please enter your username: ')
 password = getpass.getpass('Please enter your password: ')
 secret = 'cisco'
 
-choice = input('Would you like to connect by using telnet or ssh?')
+choice = input('Would you like to connect by using telnet or ssh? ')
 
-if choice.lower == 'telnet':
+if choice.lower() == 'telnet':
      device = {
      'device_type': 'cisco_ios_telnet',
      'host': host,
@@ -17,7 +17,7 @@ if choice.lower == 'telnet':
      'secret': secret,
      }
 
-elif choice.lower == "ssh":
+elif choice.lower() == 'ssh':
     device = {
     'device_type': 'cisco_ios',
     'host': host,
@@ -29,13 +29,6 @@ elif choice.lower == "ssh":
 
 else:
     raise ValueError('Invalid - Please choose either telnet or ssh: ')
-
-
-#net_connect = ConnectHandler(**device)
-#print('Connection established')
-
-#net_connect.send_command('en')
-
 
 try:
     net_connect = ConnectHandler(**device)
@@ -56,16 +49,6 @@ try:
                     net_connect.send_config_set('hostname R1')
                     print('Hostname changed to R1')
 
-                    try:
-                        output = net_connect.send_command('show run')
-                        with open('router_config.txt', 'w') as f:
-                            f.write(output)
-
-                        print('Configuration saved to router_config.txt.')
-
-                    except Exception as e:
-                        print(f'An error occurred while saving the configuration: {e}')
-
                 except Exception as e:
                     print(f'An error occurred while changing the hostname: {e}')
 
@@ -78,8 +61,8 @@ try:
         print(f'An error occured while entering privilaged exec mode: {e}')
 
 
-        net_connect.disconnect()
-        print('The onnection has concluded')
+    net_connect.disconnect()
+    print('The connection has concluded')
 
 except Exception as e:
     print(f'An error occurred: {e}')
