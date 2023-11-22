@@ -1,0 +1,312 @@
+ # Class to hold information about a generic network device
+class NetworkDevice():
+ def __init__(self, name, ip, user='cisco', pw='cisco123!'):
+ self.name = name
+ self.ip_address = ip
+ self.username = user
+ self.password = pw
+ def connect(self):
+ self.session = None
+ def get_interfaces(self):
+ self.interfaces = '--- Base Device, unknown get interfaces ---'
+
+def __init__(self, name, ip, user='cisco', pw='cisco123!'):
+ NetworkDevice.__init__(self, name, ip, user, pw)
+ def connect(self):
+ print('--- connecting IOS: telnet ' + self.ip_address)
+ self.session = pexpect.spawn('telnet ' + self.ip_address, encoding='utf-8', timeout=20)
+ result = self.session.expect(['Username:', pexpect.TIMEOUT, pexpect.EOF])
+ self.session.sendline(self.username)
+ result = self.session.expect('Password:')
+ # Successfully got password prompt, logging in with password
+ self.session.sendline(self.password)
+ self.session.expect(['>', pexpect.TIMEOUT, pexpect.EOF])
+ # Must set terminal length to zero for long replies, no pauses
+ self.session.sendline('terminal length 0')
+ result = self.session.expect(['>', pexpect.TIMEOUT, pexpect.EOF])
+ def get_interfaces(self):
+ self.session.sendline('show interfaces summary')
+ result = self.session.expect(['>', pexpect.TIMEOUT, pexpect.EOF])
+ self.interfaces = self.session.before
+
+# Class to hold information about an IOS-XR network device
+class NetworkDeviceXR(NetworkDevice):
+ # Initialize
+ def __init__(self, name, ip, user='cisco', pw='cisco123!'):
+ NetworkDevice.__init__(self, name, ip, user, pw)
+ # Connect to device
+ def connect(self):
+ print('--- connecting XR: ssh '+ self.username + '@' +
+ self.ip_address)
+ self.session = pexpect.spawn('ssh ' + self.username +
+ '@' + self.ip_address,
+encoding='utf-8', timeout=20)
+ result = self.session.expect(['password:', pexpect.TIMEOUT, pexpect.EOF])
+ # Check for failure
+ if result != 0:
+ print('--- Timout or unexpected reply from device')
+ return 0
+ # Successfully got password prompt, logging in with password
+ print('--- password:', self.password)
+ self.session.sendline(self.password)
+ self.session.expect(['#', pexpect.TIMEOUT, pexpect.EOF])
+ # Get interfaces from device
+ def get_interfaces(self):
+ self.session.sendline('show interface brief')
+ result = self.session.expect(['#', pexpect.TIMEOUT, pexpect.EOF])
+ self.interfaces = self.session.before
+
+# Import required modules/packages/library
+import csv
+from pprint import pprint
+from devclass import NetworkDevice
+from devclass import NetworkDeviceIOS
+from devclass import NetworkDeviceXR
+
+# Read device information from CSV file
+def read_devices_info(devices_file):
+ devices_list = []
+ # Open the CSV file
+ file = open(devices_file, 'r')
+
+ # Create the CSV reader for file
+ csv_devices = csv.reader(file)
+ # Iterate through all devices in our CSV file
+ for device_info in csv_devices:
+ # Create a device object with this data
+ if device_info[1] == 'ios':
+ device = NetworkDeviceIOS(device_info[0],
+ device_info[2],
+device_info[3],
+device_info[4])
+ elif device_info[1] == 'ios-xr':
+ device = NetworkDeviceXR(device_info[0],
+ device_info[2],
+device_info[3],
+device_info[4])
+ else:
+ device = NetworkDevice(device_info[0],
+ device_info[2],
+device_info[3],
+device_info[4])
+ # Append this device object to list
+ devices_list.append(device)
+ return devices_list
+
+# Print information to display
+def print_device_info(device):
+ print('-------------------------------------------------------')
+ print(' Device Name: ', device.name)
+ print(' Device IP: ', device.ip_address)
+ print(' Device username: ', device.username,)
+ print(' Device password: ', device.password)
+ print('-------------------------------------------------------')
+ print('')
+ print(device.interfaces)
+ print('')
+
+# Write information to file
+def write_devices_info(devices_file, devices_list):
+ print('---- Printing CSV output ------------------------------')
+ # Create the list of lists with devices and device info
+ devices_out_list = [] # create list for CSV output
+ for device in devices_list:
+ dev_info = [device.name, device.ip_address,
+ device.interfaces != ""]
+ devices_out_list.append(dev_info)
+ pprint(devices_out_list)
+ print('')
+ # Use CSV library to output our list of lists to a CSV file
+ with open(devices_file, 'w') as file:
+ csv_out = csv.writer(file)
+ csv_out.writerows(devices_out_list)
+
+# Import required modules/packages/library
+from util import read_devices_info
+from util import print_device_info
+from util import write_devices_info
+
+# read CSV info for all devices
+devices_list = read_devices_info('devices-02.csv')
+
+# Connect to device, show interface summary, display
+for device in devices_list:
+ print('==== Device ===============================================')
+ # connect to this specific device
+ device.connect()
+ # get interface info for specific device
+ device.get_interfaces()
+ # print device details for this device
+ print_device_info(device)
+# write CSV entry for all devices
+Write_devices_info('devices-02-out.csv', devices_list)
+
+# Class to hold information about a generic network device
+class NetworkDevice():
+ def __init__(self, name, ip, user='cisco', pw='cisco123!'):
+ self.name = name
+ self.ip_address = ip
+ self.username = user
+ self.password = pw
+ self.os_type = None
+ def connect(self):
+ self.session = None
+ def get_interfaces(self):
+ self.interfaces = '--- Base Device, unknown get interfaces ---'
+
+# Class to hold information about an IOS network device
+class NetworkDeviceIOS(NetworkDevice):
+ def __init__(self, name, ip, user='cisco', pw='cisco123!'):
+ NetworkDevice.__init__(self, name, ip, user, pw)
+ self.os_type = 'ios'
+ def connect(self):
+ print('--- connecting IOS: telnet ' + self.ip_address)
+ self.session = pexpect.spawn('telnet ' + self.ip_address,
+ encoding='utf-8', timeout=20)
+ result = self.session.expect(['Username:', pexpect.TIMEOUT, pexpect.EOF])
+ self.session.sendline(self.username)
+ result = self.session.expect('Password:')
+ # Successfully got password prompt, logging in with password
+ self.session.sendline(self.password)
+ self.session.expect(['>', pexpect.TIMEOUT, pexpect.EOF])
+ # Must set terminal length to zero for long replies, no pauses
+ self.session.sendline('terminal length 0')
+ result = self.session.expect(['>', pexpect.TIMEOUT, pexpect.EOF])
+ def get_interfaces(self):
+ self.session.sendline('show interfaces summary')
+ result = self.session.expect(['>', pexpect.TIMEOUT, pexpect.EOF])
+ self.interfaces = self.session.before
+
+# Class to hold information about an IOS-XR network device
+class NetworkDeviceXR(NetworkDevice):
+ # Initialize
+ def __init__(self, name, ip, user='cisco', pw='cisco123!'):
+ NetworkDevice.__init__(self, name, ip, user, pw)
+ self.os_type = 'ios-xr'
+ # Connect to device
+ def connect(self):
+ print('--- connecting XR: ssh '+ self.username + '@' +
+ self.ip_address)
+ self.session = pexpect.spawn('ssh ' + self.username +
+ '@' + self.ip_address,
+encoding='utf-8', timeout=20)
+ result = self.session.expect(['password:', pexpect.TIMEOUT, pexpect.EOF])
+ # Check for failure
+ if result != 0:
+ print('--- Timout or unexpected reply from device')
+ return 0
+ # Successfully got password prompt, logging in with password
+ print('--- password:', self.password)
+ self.session.sendline(self.password)
+ self.session.expect(['#', pexpect.TIMEOUT, pexpect.EOF])
+ # Get interfaces from device
+ def get_interfaces(self):
+ self.session.sendline('show interface brief')
+ result = self.session.expect(['#', pexpect.TIMEOUT, pexpect.EOF])
+ self.interfaces = self.session.before
+
+# Import required modules/packages/library
+import json
+from pprint import pprint
+from devclass import NetworkDevice
+from devclass import NetworkDeviceIOS
+from devclass import NetworkDeviceXR
+
+# Read device information from JSON file
+def read_devices_info(devices_file):
+ # Create empty list
+ devices_list = []
+ # Open the device file with JSON data
+ json_file = open(devices_file, 'r')
+
+ # Create the JSON reader for the file
+ json_device_data = json_file.read()
+ # Convert JSON string into python data structure
+ devices_info_list = json.loads(json_device_data)
+ # Iterate through all devices in our JSON file
+ for device_info in devices_info_list:
+ # Create a device object with this data
+ if device_info['os'] == 'ios':
+ device = NetworkDeviceIOS(device_info['name'],
+ device_info['ip'],
+ device_info['user'],
+ device_info['password'])
+ elif device_info['os'] == 'ios-xr':
+ device = NetworkDeviceXR(device_info['name'],
+ device_info['ip'],
+device_info['user'],
+ device_info['password'])
+ else:
+ device = NetworkDevice(device_info['name'],
+ device_info['ip'],
+device_info['user'],
+device_info['password'])
+ # Append this device object to list
+ devices_list.append(device)
+ return devices_list
+
+# Print information to display
+def print_device_info(device):
+ print('-------------------------------------------------------')
+ print(' Device Name: ', device.name)
+ print(' Device IP: ', device.ip_address)
+ print(' Device username: ', device.username,)
+ print(' Device password: ', device.password)
+ print('-------------------------------------------------------')
+
+
+# Write information to file
+def write_devices_info(devices_file, devices_list):
+ print('---- Printing JSON output ------------------------------')
+ # Create the list of lists with devices and device info
+ devices_out_list = [] # create list for JSON output
+ for device in devices_list:
+ dev_info = {'name': device.name, 'ip': device.ip_address,
+ 'os': device.os_type,
+ 'user': device.username,
+ 'password': device.password}
+ devices_out_list.append(dev_info)
+ pprint(devices_out_list)
+ print('')
+ # Convert the python device data into JSON for output to the file
+ json_device_data = json.dumps(devices_out_list)
+ # Output the JSON string to the file
+ with open(devices_file, 'w') as json_file:
+ json.file.write(json_device_data)
+
+# Import required modules/packages/library
+from util import read_devices_info
+from util import print_device_info
+from util import write_devices_info
+
+# Read JSON info for all devices
+devices_list = read_devices_info('devices-14.json')
+
+
+# Connect to device, show interface summary, display
+for device in devices_list:
+ print('==== Device ===============================================')
+ # Connect to this specific device
+ device.connect()
+ # Get interface info for specific device
+ device.get_interfaces()
+ # Print device details for this device
+ print_device_info(device)
+# Write JSON entry for all devices
+write_devices_info('devices-14-out.json', devices_list)
+
+# Do it all again, reading from the output file, to prove all correct
+print('-----------------------------------------------------------')
+print('---------- Reading from the output file, to test ----------')
+# Read JSON info for all devices
+devices_list = read_devices_info('devices-14.json')
+# Connect to device, show interface, display
+for device in devices_list:
+ print('==== Device ===============================================')
+ # Connect to this specific device
+ device.connect()
+ # Get interface info for specific device
+ device.get_interfaces()
+ # Print device details for this device
+ print_device_info(device)
+
