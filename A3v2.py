@@ -9,7 +9,7 @@ import logging
 
 #Logging
 
-logging.basicConfig(level=logging.DEBUG)
+logging.basicConfig(level=logging.INFO)
 
 #Saving config
 
@@ -34,8 +34,6 @@ def show_differences(config1, config2):
 
 def configure_device(net_connect):
     loopback_config = [
-        'en\n',
-        'conf t\n',
         'interface Loopback0\n',
         'ip address 192.168.57.101 255.255.255.0\n',
         'exit\n'
@@ -59,6 +57,7 @@ def configure_device(net_connect):
         'ip address 192.168.59.101 255.255.255.0\n',
         'exit\n'
     ]
+
     configs = loopback_config + acl_config + interface0_config + interface1_config
     output = net_connect.send_config_set(configs)
     print(output)
@@ -91,48 +90,48 @@ def main():
     }
 
 #Connecting to device
-    net_connect = ConnectHandler(**device)
+net_connect = ConnectHandler(**device)
 
-    try:
-        with net_connect as connection:
-            logging.info('Connection established')
+try:
+    with net_connect:
+        logging.info('Connection established')
 
 #Sending config commands
 
-            configure_device(net_connect)
+        configure_device(net_connect)
 
 # Saving config
-            running_configuration = net_connect.send_command('show running-config')
-            local_config_file_name = 'local_config.txt'
-            save_config_to_file(running_configuration, local_config_file_name)
-            logging.info(f'The configuration has been saved to {local_config_file_name}')
+        running_configuration = net_connect.send_command('show running-config')
+        local_config_file_name = 'local_config.txt'
+        save_config_to_file(running_configuration, local_config_file_name)
+        logging.info(f'The configuration has been saved to {local_config_file_name}')
 
 #comaprign config
 
-            local_config_file_name = 'local_config.txt'
+        local_config_file_name = 'local_config.txt'
 
-            try:
-                with open(local_config_file_name, 'r') as local_config_file:
-                    local_config = local_config_file.read()
+        try:
+            with open(local_config_file_name, 'r') as local_config_file:
+                local_config = local_config_file.read()
 
-                if running_configuration and local_config:
-                    if running_configuration == local_config:
-                        logging.info('The running configuration is the same as the local configuration')
-                    else:
-                        logging.warning('The running configuration does not match the local configuration: ')
-                        show_differences(running_configuration, local_config)
+            if running_configuration and local_config:
+                if running_configuration == local_config:
+                    logging.info('The running configuration is the same as the local configuration')
                 else:
-                    logging.error('Failed to access configurations')
+                    logging.warning('The running configuration does not match the local configuration: ')
+                    show_differences(running_configuration, local_config)
+            else:
+                logging.error('Failed to access configurations')
 
-            except FileNotFoundError:
-                logging.error(f'The local configurations file, ({local_config_file_name}), could not be found')
+        except FileNotFoundError:
+            logging.error(f'The local configurations file, ({local_config_file_name}), could not be found')
 
-    except Exception as e:
-        logging.error(f'An error occurred: {e}')
+except Exception as e:
+    logging.error(f'An error occurred: {e}')
 
 #Ending connection
-    finally:
-        logging.info('The connection has concluded')
+finally:
+    logging.info('The connection has concluded')
     net_connect.disconnect()
     
 if __name__ == "__main__":
