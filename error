@@ -1,0 +1,45 @@
+INFO:paramiko.transport:Connected (version 1.99, client Cisco-1.25)
+INFO:paramiko.transport:Authentication (password) successful!
+INFO:root:Connection established
+ERROR:root:An error occurred: Timed-out reading channel, data not available.
+Traceback (most recent call last):
+  File "/home/devasc/.local/lib/python3.8/site-packages/paramiko/channel.py", line 699, in recv
+    out = self.in_buffer.read(nbytes, self.timeout)
+  File "/home/devasc/.local/lib/python3.8/site-packages/paramiko/buffered_pipe.py", line 164, in read
+    raise PipeTimeout()
+paramiko.buffered_pipe.PipeTimeout
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "/home/devasc/.local/lib/python3.8/site-packages/netmiko/base_connection.py", line 550, in _read_channel_expect
+    new_data = self.remote_conn.recv(MAX_BUFFER)
+  File "/home/devasc/.local/lib/python3.8/site-packages/paramiko/channel.py", line 701, in recv
+    raise socket.timeout()
+socket.timeout
+
+During handling of the above exception, another exception occurred:
+
+Traceback (most recent call last):
+  File "A3.py", line 101, in main
+    configure_device(net_connect)
+  File "A3.py", line 63, in configure_device
+    output = net_connect.send_config_set(configs)
+  File "/home/devasc/.local/lib/python3.8/site-packages/netmiko/base_connection.py", line 1735, in send_config_set
+    output += self.config_mode(*cfg_mode_args)
+  File "/home/devasc/.local/lib/python3.8/site-packages/netmiko/cisco_base_connection.py", line 40, in config_mode
+    return super().config_mode(config_command=config_command, pattern=pattern)
+  File "/home/devasc/.local/lib/python3.8/site-packages/netmiko/base_connection.py", line 1619, in config_mode
+    if not self.check_config_mode():
+  File "/home/devasc/.local/lib/python3.8/site-packages/netmiko/cisco/cisco_ios.py", line 29, in check_config_mode
+    return super().check_config_mode(check_string=check_string, pattern=pattern)
+  File "/home/devasc/.local/lib/python3.8/site-packages/netmiko/cisco_base_connection.py", line 30, in check_config_mode
+    return super().check_config_mode(check_string=check_string, pattern=pattern)
+  File "/home/devasc/.local/lib/python3.8/site-packages/netmiko/base_connection.py", line 1606, in check_config_mode
+    output = self.read_until_pattern(pattern=pattern)
+  File "/home/devasc/.local/lib/python3.8/site-packages/netmiko/base_connection.py", line 627, in read_until_pattern
+    return self._read_channel_expect(*args, **kwargs)
+  File "/home/devasc/.local/lib/python3.8/site-packages/netmiko/base_connection.py", line 560, in _read_channel_expect
+    raise NetmikoTimeoutException(
+netmiko.ssh_exception.NetmikoTimeoutException: Timed-out reading channel, data not available.
+INFO:root:The connection has concluded
